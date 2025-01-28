@@ -67,7 +67,22 @@ export const logoutUser = async (req, res, next) => {
 };
 
 export const forgetPassword = async (req, res, next) => {
+  const { email } = req.body;
   // Implement feature for forget password
+  const user = await findUserRepo({ email });
+  if (!user) {
+    return next(
+      new ErrorHandler(401, "user not found! register yourself now!!")
+    );
+  }
+  const resetPasswordToken = await user.getResetPasswordToken();
+  await sendPasswordResetEmail(user, resetPasswordToken);
+  res
+    .status(200)
+    .json({
+      success: true,
+      msg: "reset link sent to your registered email...",
+    });
 };
 
 export const resetUserPassword = async (req, res, next) => {
