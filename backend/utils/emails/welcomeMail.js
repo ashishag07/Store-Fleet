@@ -5,7 +5,7 @@ import nodemailer from "nodemailer";
 export const sendWelcomeEmail = async (user) => {
   // Write your code here
   const transporter = nodemailer.createTransport({
-    service: process.env.SMTP_SERVICE,
+    service: process.env.SMPT_SERVICE,
     auth: {
       user: process.env.STORFLEET_SMPT_MAIL,
       pass: process.env.STORFLEET_SMPT_MAIL_PASSWORD,
