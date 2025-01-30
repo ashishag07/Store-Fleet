@@ -69,7 +69,7 @@ export const logoutUser = async (req, res, next) => {
 export const forgetPassword = async (req, res, next) => {
   const { email } = req.body;
   // Implement feature for forget password
-  const user = await findUserRepo({ email }, true);
+  const user = await findUserRepo({ email });
   if (!user) {
     return next(
       new ErrorHandler(401, "user not found! register yourself now!!")
@@ -86,6 +86,24 @@ export const forgetPassword = async (req, res, next) => {
 
 export const resetUserPassword = async (req, res, next) => {
   // Implement feature for reset password
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+  if (!password || password != confirmPassword) {
+    return next(
+      new ErrorHandler(400, "confirm password not matched with password")
+    );
+  }
+  const hasToken = crypto.createHash("sha256").update(token).digest("hex");
+  const found = await findUserForPasswordResetRepo(hasToken);
+  if (!found) {
+    return next(new ErrorHandler(400, "token has expired"));
+  }
+  found.password = confirmPassword;
+  await found.save();
+  res.status(200).json({
+    success: true,
+    msg: "password reset successful...",
+  });
 };
 
 export const getUserDetails = async (req, res, next) => {
