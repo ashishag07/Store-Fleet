@@ -198,4 +198,18 @@ export const deleteUser = async (req, res, next) => {
 
 export const updateUserProfileAndRole = async (req, res, next) => {
   // Write your code here for updating the roles of other users by admin
+  try {
+    const user = await updateUserRoleAndProfileRepo(req.params.id, req.body);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "no user found with provided id" });
+    }
+    res.status(200).json({
+      success: true,
+      msg: "user role and profile updated successfully",
+    });
+  } catch (error) {
+    return next(new ErrorHandler(400, error));
+  }
 };
