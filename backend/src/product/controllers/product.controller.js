@@ -31,6 +31,37 @@ export const addNewProduct = async (req, res, next) => {
 
 export const getAllProducts = async (req, res, next) => {
   // Implement the functionality for search, filter and pagination this function.
+  try {
+    const { keyword, page } = req.query;
+    const query = {};
+    const limit = 10;
+    let pageNumber;
+
+    if (!page || parseInt(page) < 1) {
+      pageNumber = 1;
+    } else {
+      pageNumber = parseInt(page);
+    }
+
+    const skip = limit * (pageNumber - 1); // how many documents want to skip
+
+    if (keyword) {
+      query.name = { $regex: keyword, $options: "i" };
+    }
+
+    const filteredProducts = await getAllProductsRepo(query, limit, skip);
+    const allProductsCounts = await getTotalCountsOfProduct(query);
+    const totalPages = Math.ceil(allProductsCounts / limit);
+
+    res.status(200).json({
+      success: true,
+      totalPages: totalPages,
+      page: pageNumber,
+      filteredProducts,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(400, error));
+  }
 };
 
 export const updateProduct = async (req, res, next) => {
