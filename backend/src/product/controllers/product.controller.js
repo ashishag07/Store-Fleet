@@ -160,6 +160,7 @@ export const getAllReviewsOfAProduct = async (req, res, next) => {
 export const deleteReview = async (req, res, next) => {
   // Insert the essential code into this controller wherever necessary to resolve issues related to removing reviews and updating product ratings.
   try {
+    const userId = req.user._id;
     const { productId, reviewId } = req.query;
     if (!productId || !reviewId) {
       return next(
@@ -183,7 +184,17 @@ export const deleteReview = async (req, res, next) => {
     }
 
     const reviewToBeDeleted = reviews[isReviewExistIndex];
+    if (reviewToBeDeleted.user.toString() !== userId.toString()) {
+      return next(new ErrorHandler(400, "You can delete only your review."));
+    }
     reviews.splice(isReviewExistIndex, 1);
+
+    let avgRating = 0;
+    product.reviews.forEach((rev) => {
+      avgRating += rev.rating;
+    });
+    const updatedRatingOfProduct = avgRating / product.reviews.length;
+    product.rating = updatedRatingOfProduct;
 
     await product.save({ validateBeforeSave: false });
     res.status(200).json({
